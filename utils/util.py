@@ -4,14 +4,41 @@ from config import BOOKS_CSV, MEMBERS_CSV
 def record_exists(df, name, column_name):
     return name.lower() in df[column_name].str.strip().str.lower().values
 
-def get_record(df, name, column_name):
+def get_record(df, column_name, name):
     return df[df[column_name].str.strip().str.lower() == name.lower()]
 
 
-def get_available_records(df, name, column_name):
-    return df[
-        (df[column_name].str.strip().str.lower() == name.lower()) &
-        (df["Availability"].astype(str).str.lower() == "true")]
+def get_available_records(
+        df,
+        column_one,
+        value_one,
+        column_two,
+        value_two,
+        operation
+):
+
+    condition_one = (
+        df[column_one]
+        .astype(str)
+        .str.strip()
+        .str.lower() == value_one.lower()
+    )
+
+    condition_two = (
+        df[column_two]
+        .astype(str)
+        .str.strip()
+        .str.lower() == value_two.lower()
+    )
+
+    if operation == "&":
+        return df[condition_one & condition_two]
+
+    elif operation == "|":
+        return df[condition_one | condition_two]
+
+    else:
+        raise ValueError("Invalid operation. Use '&' or '|'.")
 
 def update_borrowed_books(
         members_df,
@@ -223,11 +250,7 @@ def process_book_transaction(
         # Get Book Row
         # -------------------------------
 
-        book_row = get_record(
-            books_df,
-            book_title,
-            "Title"
-        )
+        book_row = get_record(books_df,"Title", book_title)
 
         # -------------------------------
         # Check Availability
@@ -295,3 +318,16 @@ def display_books(books_df, heading):
         print(f"Genre        : {row['Genre']}")
         print(f"Availability : {row['Availability']}")
         print("-" * 50)
+
+def display_members(members_df, heading):
+
+    print(f"\n{heading}")
+    print("-" * 60)
+
+    for _, row in members_df.iterrows():
+        print(f"Member ID      : {row['Member_ID']}")
+        print(f"Name           : {row['Name']}")
+        print(f"Age            : {row['Age']}")
+        print(f"Contact Info   : {row['Contact_Info']}")
+        print(f"Borrowed Books : {row['Borrowed_Books']}")
+        print("-" * 60)

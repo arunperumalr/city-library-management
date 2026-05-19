@@ -1,5 +1,6 @@
 from services.library import add_book, add_member, delete_book, delete_member, issue_book, return_book, \
-    clear_library_data, show_available_books_by_genre
+    clear_library_data, show_available_books_by_genre, show_members_with_borrowed_books, search_books, \
+    show_most_popular_genre
 
 while True:
     print("\nWelcome to the Citi Library!")
@@ -11,7 +12,10 @@ while True:
           "\n5. Issue Book"
           "\n6. Return Book"
           "\n7. Available Books by Genre"
-          "\n8. Clear Library")
+          "\n8. Members who borrowed books"
+          "\n9. Search books"
+          "\n10. Most Popular Genre"
+          "\n11. Clear Library")
 
     choice = int(input("Please enter your choice: "))
     if choice == 0:
@@ -40,6 +44,15 @@ while True:
         show_available_books_by_genre()
 
     elif choice == 8:
+        show_members_with_borrowed_books()
+
+    elif choice == 9:
+        search_books()
+
+    elif choice == 10:
+        show_most_popular_genre()
+
+    elif choice == 11:
         clear_library_data()
 
     else:
