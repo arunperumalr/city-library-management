@@ -1,14 +1,17 @@
 import pandas as pd
 from config import BOOKS_CSV, MEMBERS_CSV
 
-df = pd.read_csv(BOOKS_CSV)
-
 def record_exists(df, name, column_name):
     return name.lower() in df[column_name].str.strip().str.lower().values
 
-
 def get_record(df, name, column_name):
     return df[df[column_name].str.strip().str.lower() == name.lower()]
+
+
+def get_available_records(df, name, column_name):
+    return df[
+        (df[column_name].str.strip().str.lower() == name.lower()) &
+        (df["Availability"].astype(str).str.lower() == "true")]
 
 def update_borrowed_books(
         members_df,
@@ -68,20 +71,36 @@ def update_book_availability(books_df, book_row, availability):
 
 
 
-def add_record(csv_file, id_column, check_column, check_value, entity_object, entity_name):
+def add_record(
+        csv_file,
+        id_column,
+        check_column,
+        check_value,
+        entity_object,
+        entity_name
+):
 
     try:
+
+        # Read CSV
+        df = pd.read_csv(csv_file)
+
         normalized_value = check_value.strip().lower()
 
         # Check duplicate
-        if normalized_value in df[check_column].str.strip().str.lower().values:
+        if normalized_value in (
+                df[check_column]
+                .astype(str)
+                .str.strip()
+                .str.lower()
+                .values
+        ):
+
             print(f"\n{entity_name} already exists!")
             return
 
         # Generate New ID
         new_id = 1 if df.empty else df[id_column].max() + 1
-        print(f"\ndf.empty: ", df.empty)
-        print("\nNew ID: ", new_id)
 
         # Set generated ID
         setattr(entity_object, id_column.lower(), new_id)
@@ -262,3 +281,17 @@ def process_book_transaction(
 
     except Exception as e:
         print(f"Error: {e}")
+
+def display_books(books_df, heading):
+
+    print(f"\n{heading}")
+    print("-" * 50)
+
+    for _, row in books_df.iterrows():
+
+        print(f"Book ID      : {row['Book_ID']}")
+        print(f"Title        : {row['Title']}")
+        print(f"Author       : {row['Author']}")
+        print(f"Genre        : {row['Genre']}")
+        print(f"Availability : {row['Availability']}")
+        print("-" * 50)

@@ -1,7 +1,10 @@
+import pandas as pd
+
 from config import BOOKS_CSV, MEMBERS_CSV
 from models.book import Book
 from models.member import Member
-from utils.util import add_record, delete_record, clear_csv, process_book_transaction
+from utils.util import add_record, delete_record, clear_csv, process_book_transaction, get_available_records, \
+    display_books
 
 
 def add_book():
@@ -50,3 +53,26 @@ def return_book():
         updated_availability=True,
         success_message="returned"
     )
+
+
+def show_available_books_by_genre():
+    try:
+        genre = input("Enter Genre: ").strip()
+        books_df = pd.read_csv(BOOKS_CSV)
+
+        # Filter books by: Matching genre & Availability == True
+        filtered_books = get_available_records(books_df, genre, "Genre")
+
+        # Check if books exist
+        if filtered_books.empty:
+            print(f"\nNo available books found in genre: {genre}")
+            return
+
+        # Display Books
+        display_books(filtered_books, f"Available Books in Genre '{genre}':")
+
+    except FileNotFoundError:
+        print("CSV file not found.")
+
+    except Exception as e:
+        print(f"Error: {e}")

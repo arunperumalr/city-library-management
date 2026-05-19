@@ -1,5 +1,5 @@
 from services.library import add_book, add_member, delete_book, delete_member, issue_book, return_book, \
-    clear_library_data
+    clear_library_data, show_available_books_by_genre
 
 while True:
     print("\nWelcome to the Citi Library!")
@@ -10,7 +10,8 @@ while True:
           "\n4. Delete Member"
           "\n5. Issue Book"
           "\n6. Return Book"
-          "\n7. Clear Library")
+          "\n7. Available Books by Genre"
+          "\n8. Clear Library")
 
     choice = int(input("Please enter your choice: "))
     if choice == 0:
@@ -36,6 +37,9 @@ while True:
         return_book()
 
     elif choice == 7:
+        show_available_books_by_genre()
+
+    elif choice == 8:
         clear_library_data()
 
     else:
