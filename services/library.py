@@ -1,74 +1,52 @@
-class Library:
-
-    def __init__(self):
-        self.books = []
-        self.members = []
-        self.transactions = []
-
-    # def add_book(self, book):
-    #     self.books.append(book)
-
-    def add_member(self, member):
-        self.members.append(member)
-
-    def find_member(self, member_id):
-
-        for member in self.members:
-            if member.member_id == member_id:
-                return member
-
-        return None
-
-    def find_book(self, book_id):
-
-        for book in self.books:
-            if book.book_id == book_id:
-                return book
-
-        return None
-
-    def issue_book(self, member_id, book_id):
-
-        member = self.find_member(member_id)
-        book = self.find_book(book_id)
-
-        if not member:
-            print("Member not found")
-            return
-
-        if not book:
-            print("Book not found")
-            return
-
-        if not book.is_available:
-            print("Book already issued")
-            return
-
-        book.issue_book()
-        member.borrow_book(book)
-
-        print("Book issued successfully")
-
-    # ADD THIS METHOD
-    def search_book(self, keyword):
-
-        found = False
-
-        for book in self.books:
-
-            if keyword.lower() in book.title.lower() \
-                    or keyword.lower() in book.author.lower():
-                print(f"""
-Book ID   : {book.book_id}
-Title     : {book.title}
-Author    : {book.author}
-Genre     : {book.genre}
-Available : {book.is_available}
-""")
-
-                found = True
-
-        if not found:
-            print("No books found")
+from config import BOOKS_CSV, MEMBERS_CSV
+from models.book import Book
+from models.member import Member
+from utils.util import add_record, delete_record, clear_csv, process_book_transaction
 
 
+def add_book():
+    book_title = input("Enter Book Name: ")
+    book_author = input("Enter Book Author: ")
+    book_genre = input("Enter Book Genre: ")
+    book = Book(None, book_title, book_author, book_genre)
+    add_record(BOOKS_CSV, "Book_ID", "Title", book_title, book, "Book")
+
+
+def add_member():
+    name = input("Enter Member Name: ")
+    age = int(input(f"Enter {name} Age: "))
+    contact_info = input(f"Enter {name} Contact Info: ")
+    member = Member(None, name, age, contact_info)
+    add_record(MEMBERS_CSV, "Member_ID", "Name", name, member, "Member")
+
+
+def delete_book():
+    book_title = input("Enter Book Name to be deleted: ")
+    delete_record(BOOKS_CSV, "Title", book_title, "Book")
+
+
+def delete_member():
+    member_name = input("Enter Member Name to be deleted: ")
+    delete_record(MEMBERS_CSV, "Name", member_name, "Member")
+
+
+def clear_library_data():
+    clear_csv(BOOKS_CSV)
+    clear_csv(MEMBERS_CSV)
+    print("\nAll library data cleared successfully !")
+
+
+def issue_book():
+    process_book_transaction(
+        expected_availability=True,
+        updated_availability=False,
+        success_message="issued"
+    )
+
+
+def return_book():
+    process_book_transaction(
+        expected_availability=False,
+        updated_availability=True,
+        success_message="returned"
+    )

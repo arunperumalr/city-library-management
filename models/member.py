@@ -5,7 +5,7 @@ class Member:
         self.name = name
         self.age = age
         self.contact = contact
-        self.borrowed_books = []
+        self.borrowed_books = ""
 
     def to_dict(self):
         return {
