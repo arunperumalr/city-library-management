@@ -17,7 +17,12 @@ while True:
           "\n10. Most Popular Genre"
           "\n11. Clear Library")
 
-    choice = int(input("Please enter your choice: "))
+    try:
+        choice = int(input("Please enter your choice: "))
+    except ValueError:
+        print("\nInvalid input. Please enter a number between 0 to 11")
+        continue
+
     if choice == 0:
         print("Thank you for using our application, Bye!")
         break

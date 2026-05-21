@@ -1,5 +1,8 @@
 import pandas as pd
-from config import BOOKS_CSV, MEMBERS_CSV
+from datetime import datetime
+from config import BOOKS_CSV, MEMBERS_CSV, BORROW_LOG_CSV
+from models.log import Log
+
 
 def record_exists(df, name, column_name):
     return name.lower() in df[column_name].str.strip().str.lower().values
@@ -197,14 +200,9 @@ def clear_csv(csv_file):
         print(f"Error: {e}")
 
 
-def process_book_transaction(
-        expected_availability,
-        updated_availability,
-        success_message
-):
+def process_book_transaction(expected_availability, updated_availability, success_message):
 
     try:
-
         member_name = input("Enter Member Name: ").strip()
         book_title = input("Enter Book Name: ").strip()
 
@@ -298,6 +296,7 @@ def process_book_transaction(
         books_df.to_csv(BOOKS_CSV, index=False)
 
         print(f"\nBook {success_message} successfully!")
+        return member_name, book_title
 
     except FileNotFoundError:
         print("CSV file not found.")
@@ -331,3 +330,38 @@ def display_members(members_df, heading):
         print(f"Contact Info   : {row['Contact_Info']}")
         print(f"Borrowed Books : {row['Borrowed_Books']}")
         print("-" * 60)
+
+def update_borrow_log(member_name, book_title, action):
+    try:
+        # Read CSV
+        borrow_log_df = pd.read_csv(BORROW_LOG_CSV)
+
+        # Generate Transaction ID
+        transaction_id = (
+            1 if borrow_log_df.empty
+            else borrow_log_df["Transaction_ID"].max() + 1
+        )
+
+        # Current Date
+        current_date = (datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+        # Create Log Object
+        log = Log(
+            transaction_id,
+            member_name,
+            book_title,
+            action,
+            current_date
+        )
+
+        # Add New Row
+        borrow_log_df.loc[len(borrow_log_df)] = log.to_dict()
+
+        # Save CSV
+        borrow_log_df.to_csv(BORROW_LOG_CSV, index=False)
+
+    except FileNotFoundError:
+        print("Borrow log CSV file not found.")
+
+    except Exception as e:
+        print(f"Error: {e}")

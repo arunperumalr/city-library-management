@@ -1,10 +1,9 @@
 import pandas as pd
-
-from config import BOOKS_CSV, MEMBERS_CSV
+from config import BOOKS_CSV, MEMBERS_CSV, BORROW_LOG_CSV
 from models.book import Book
 from models.member import Member
 from utils.util import add_record, delete_record, clear_csv, process_book_transaction, get_available_records, \
-    display_books, display_members, get_record
+    display_books, display_members, get_record, update_borrow_log
 
 
 def add_book():
@@ -36,23 +35,26 @@ def delete_member():
 def clear_library_data():
     clear_csv(BOOKS_CSV)
     clear_csv(MEMBERS_CSV)
+    clear_csv(BORROW_LOG_CSV)
     print("\nAll library data cleared successfully !")
 
 
 def issue_book():
-    process_book_transaction(
+    result = process_book_transaction(
         expected_availability=True,
         updated_availability=False,
         success_message="issued"
     )
+    process_borrow_log(result, "Issued")
 
 
 def return_book():
-    process_book_transaction(
+    result = process_book_transaction(
         expected_availability=False,
         updated_availability=True,
         success_message="returned"
     )
+    process_borrow_log(result, "Returned")
 
 
 def show_available_books_by_genre():
@@ -61,7 +63,7 @@ def show_available_books_by_genre():
         books_df = pd.read_csv(BOOKS_CSV)
 
         # Filter books by: Matching genre & Availability == True
-        filtered_books = get_available_records(books_df,"Genre", genre, "Availability", "true", "&" )
+        filtered_books = get_available_records(books_df, "Genre", genre, "Availability", "true", "&")
 
         # Check if books exist
         if filtered_books.empty:
@@ -119,7 +121,8 @@ def search_books():
         books_df = pd.read_csv(BOOKS_CSV)
 
         # Filter matching books
-        matched_books = get_available_records(books_df, "Title", search_value, "Author", search_value, "|")
+        matched_books = get_available_records(books_df, "Title", search_value,
+                                              "Author", search_value, "|")
 
         # Check if books found
         if matched_books.empty:
@@ -135,14 +138,14 @@ def search_books():
     except Exception as e:
         print(f"Error: {e}")
 
-def show_most_popular_genre():
 
+def show_most_popular_genre():
     try:
         # Read CSV
         books_df = pd.read_csv(BOOKS_CSV)
 
         # Filter only issued books
-        issued_books = get_record(books_df, "Availability", "false")
+        issued_books = books_df[books_df["Availability"] == False]
 
         # Check if any books are issued
         if issued_books.empty:
@@ -163,7 +166,7 @@ def show_most_popular_genre():
 
         # Display Result
         print("\nMost Popular Genre")
-        print("-" * 40)
+        print("-" * 30)
         print(f"Genre            : {most_popular_genre}")
         print(f"Books Issued     : {issue_count}")
 
@@ -172,3 +175,10 @@ def show_most_popular_genre():
 
     except Exception as e:
         print(f"Error: {e}")
+
+
+def process_borrow_log(result, action):
+    if not result:
+        return
+    member_name, book_title = result
+    update_borrow_log(member_name, book_title, action)
