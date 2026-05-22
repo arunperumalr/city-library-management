@@ -138,6 +138,7 @@ python main.py
 
 ## Future Improvements
 
+- Support more than one copy of a book
 - SQLite/MySQL Database Integration
 - GUI using Tkinter or PyQt
 - Flask/Django Web Application

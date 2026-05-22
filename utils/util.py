@@ -152,24 +152,25 @@ def add_record(
 def delete_record(csv_file, column_name, value, entity_name):
 
     try:
-        # Read Existing CSV
         df = pd.read_csv(csv_file)
-
         normalized_value = value.strip().lower()
 
-        # Check if record exists
-        if normalized_value in df[column_name].str.strip().str.lower().values:
+        # ✅ compute once
+        mask = df[column_name].astype(str).str.strip().str.lower() == normalized_value
+        matched_df = df[mask]
 
-            # Remove matching rows
-            df = df[df[column_name].str.strip().str.lower() != normalized_value]
+        # ✅ validation uses same result
+        can_delete, message = can_delete_record(matched_df, entity_name)
 
-            # Save updated dataframe
-            df.to_csv(csv_file, index=False)
+        if not can_delete:
+            print(f"\n{message}")
+            return
 
-            print(f"\n{entity_name} deleted successfully!")
+        # delete using same mask
+        df = df[~mask]
+        df.to_csv(csv_file, index=False)
 
-        else:
-            print(f"\n{entity_name} not found.")
+        print(f"\n{entity_name} deleted successfully!")
 
     except FileNotFoundError:
         print("CSV file not found.")
@@ -365,3 +366,29 @@ def update_borrow_log(member_name, book_title, action):
 
     except Exception as e:
         print(f"Error: {e}")
+
+
+def can_delete_record(matched_df, entity_name):
+    if matched_df.empty:
+        return False, f"{entity_name} not found."
+
+    row = matched_df.iloc[0]
+
+    if entity_name.lower() == "book":
+        if not row["Availability"]:
+            return False, "Book cannot be deleted because it is currently issued."
+        return True, ""
+
+    if entity_name.lower() == "member":
+        borrowed = row["Borrowed_Books"]
+
+        if pd.isna(borrowed):
+            return True, ""
+
+        borrowed_str = str(borrowed).strip()
+        if borrowed_str in ["", "[]", "none"]:
+            return True, ""
+
+        return False, "Member cannot be deleted because they still have borrowed books."
+
+    return True, ""
